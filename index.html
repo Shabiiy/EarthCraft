@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earthcraft</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Earthcraft | Architecture &amp; Design</title>
+    <meta name="description" content="Earthcraft is a premier architecture and design firm crafting spaces that breathe and souls belong. Specialising in residential, interiors, and community design.">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Earthcraft | Architecture &amp; Design">
+    <meta property="og:description" content="Where Spaces Breathe, and Souls Belong. A premier architecture firm crafting thoughtful, sustainable environments.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#7F401C">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -11,7 +18,7 @@
 </head>
 <body>
     <!-- Persistent Global Image Layer -->
-    <img class="global-bg" src="bg.png" alt="">
+    <img class="global-bg" src="bg.png" alt="" loading="eager" fetchpriority="high" decoding="async">
     
     <!-- Advanced Silk Trail Layer -->
     <canvas id="cursor-trail" class="cursor-trail"></canvas>
@@ -21,7 +28,7 @@
 
     <header class="header">
         <div class="logo">
-            <img src="EC logo.png" alt="Earthcraft Logo">
+            <img src="EC logo.png" alt="Earthcraft Logo" loading="eager" fetchpriority="high" decoding="async" width="120" height="40">
         </div>
         <nav class="nav-links glass">
             <a href="#" class="pill">
@@ -78,15 +85,15 @@
     <main class="main-content">
         <section class="master-video-sequence">
             <!-- Explicit Fixed Boundary Frames -->
-            <img id="bound-seq1-start" class="boundary-frame" src="SEQ1-start.png">
+            <img id="bound-seq1-start" class="boundary-frame" src="SEQ1-start.png" loading="eager" fetchpriority="high" decoding="async" alt="Earthcraft sequence start">
             <video id="seq1-vid" src="SEQ1.mp4" playsinline muted preload="auto" style="opacity: 0;"></video>
-            <video id="seq1-vid-rev" src="SEQ1-rev.mp4" playsinline muted preload="auto" style="opacity: 0;"></video>
+            <video id="seq1-vid-rev" src="SEQ1-rev.mp4" playsinline muted preload="none" style="opacity: 0;"></video>
             
-            <img id="bound-seq1-end" class="boundary-frame" src="SEQ1-end and SEQ2-start.png" style="opacity: 0;">
-            <video id="seq2-vid" src="SEQ2.mp4" playsinline muted preload="auto" style="opacity: 0;"></video>
-            <video id="seq2-vid-rev" src="SEQ2-rev.mp4" playsinline muted preload="auto" style="opacity: 0;"></video>
+            <img id="bound-seq1-end" class="boundary-frame" src="SEQ1-end and SEQ2-start.png" style="opacity: 0;" loading="lazy" decoding="async" alt="Earthcraft sequence transition">
+            <video id="seq2-vid" src="SEQ2.mp4" playsinline muted preload="none" style="opacity: 0;"></video>
+            <video id="seq2-vid-rev" src="SEQ2-rev.mp4" playsinline muted preload="none" style="opacity: 0;"></video>
             
-            <img id="bound-seq2-end" class="boundary-frame" src="SEQ2-end.PNG" style="opacity: 0;">
+            <img id="bound-seq2-end" class="boundary-frame" src="SEQ2-end.PNG" style="opacity: 0;" loading="lazy" decoding="async" alt="Earthcraft sequence end">
             
             <div id="text-1" class="abs-text top-left">
                 <h2 class="sequence-title">Where Spaces Breathe,<br>and Souls Belong.</h2>
@@ -114,31 +121,31 @@
             <section class="native-sec floating-gallery">
                 <div class="masonry-col col-left">
                     <div class="gallery-item">
-                        <img class="masonry-img" src="Gallery/Design & Advisory Services.png" alt="Design & Advisory Services">
+                        <img class="masonry-img" src="Gallery/Design & Advisory Services.png" alt="Design &amp; Advisory Services" loading="lazy" decoding="async">
                         <p class="gallery-caption">Design & Advisory Services</p>
                     </div>
                     <div class="gallery-item">
-                        <img class="masonry-img" src="Gallery/ThomsonsCasa.png" alt="ThomsonsCasa">
+                        <img class="masonry-img" src="Gallery/ThomsonsCasa.png" alt="ThomsonsCasa" loading="lazy" decoding="async">
                         <p class="gallery-caption">ThomsonsCasa</p>
                     </div>
                 </div>
                 <div class="masonry-col col-center">
                     <div class="gallery-item">
-                        <img class="masonry-img" src="Gallery/Hospitality & Lifetyle Spaces.png" alt="Hospitality & Lifestyle Spaces">
+                        <img class="masonry-img" src="Gallery/Hospitality & Lifetyle Spaces.png" alt="Hospitality &amp; Lifestyle Spaces" loading="lazy" decoding="async">
                         <p class="gallery-caption">Hospitality & Lifestyle Spaces</p>
                     </div>
                     <div class="gallery-item">
-                        <img class="masonry-img" src="Gallery/Thottam.png" alt="Thottam">
+                        <img class="masonry-img" src="Gallery/Thottam.png" alt="Thottam" loading="lazy" decoding="async">
                         <p class="gallery-caption">Thottam</p>
                     </div>
                 </div>
                 <div class="masonry-col col-right">
                     <div class="gallery-item">
-                        <img class="masonry-img" src="Gallery/Residential Spaces.png" alt="Residential Spaces">
+                        <img class="masonry-img" src="Gallery/Residential Spaces.png" alt="Residential Spaces" loading="lazy" decoding="async">
                         <p class="gallery-caption">Residential Spaces</p>
                     </div>
                     <div class="gallery-item">
-                        <img class="masonry-img" src="Gallery/Zaitoon.png" alt="Zaitoon">
+                        <img class="masonry-img" src="Gallery/Zaitoon.png" alt="Zaitoon" loading="lazy" decoding="async">
                         <p class="gallery-caption">Zaitoon</p>
                     </div>
                 </div>
