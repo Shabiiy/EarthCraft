@@ -328,7 +328,10 @@ h1, h2, h3, h4, h5, h6 {
     height: 100vh;
     object-fit: cover;
     pointer-events: none;
-    z-index: 1; 
+    z-index: 1;
+    will-change: opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 video {
@@ -340,6 +343,9 @@ video {
     object-fit: cover;
     pointer-events: none;
     z-index: 2; /* Sits directly over boundary frames */
+    will-change: opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 /* Absolute Texts */

@@ -219,64 +219,102 @@ requestAnimationFrame(playbackRateLoop);
 
 let scrollCooldown = 0;
 
-// Utility to completely strip previous-frame flashes by double-painting the video buffers
-function safeRenderAndPlay(vidElement, elementsToHide) {
+// ─── ROBUST FRAME-READY VIDEO TRANSITION ────────────────────────────────────
+// Waits until the video has decoded its first frame (readyState >= 3)         
+// before hiding the boundary frame anchor — eliminating all flash-of-background.
+// A 300 ms safety timeout fires regardless so the UI never deadlocks.          
+// The boundary frame stays visible during the brief overlap (crossfade).        
+function seamlessTransitionTo(vidElement, anchorToHide, onReady) {
+    // Reset playhead cleanly
     vidElement.currentTime = 0.001;
-    let p = vidElement.play();
-    if(p !== undefined) p.catch(() => {});
-    
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-             setHardFocus(vidElement, elementsToHide);
-        });
-    });
+
+    // Always ensure the video layer is below boundary frame until ready
+    gsap.set(vidElement, { autoAlpha: 0 });
+
+    const doSwap = () => {
+        // Crossfade: video fades in, anchor fades out simultaneously
+        gsap.to(vidElement, { autoAlpha: 1, duration: 0.12, ease: 'none' });
+        const hideTargets = Array.isArray(anchorToHide) ? anchorToHide : [anchorToHide];
+        hideTargets.forEach(el => gsap.to(el, { autoAlpha: 0, duration: 0.08, delay: 0.04, ease: 'none' }));
+        if (onReady) onReady();
+    };
+
+    // Attempt to play, then wait for frame readiness
+    const attemptPlay = () => {
+        const p = vidElement.play();
+        if (p !== undefined) p.catch(() => {});
+
+        // If video already has enough data, swap immediately next paint
+        if (vidElement.readyState >= 3) {
+            requestAnimationFrame(doSwap);
+        } else {
+            // Otherwise wait for canplay (first decodable frame available)
+            let swapped = false;
+            const onCanPlay = () => {
+                if (swapped) return;
+                swapped = true;
+                vidElement.removeEventListener('canplay', onCanPlay);
+                clearTimeout(fallback);
+                requestAnimationFrame(doSwap);
+            };
+            // Safety: even if canplay never fires (network stall), swap after 300 ms
+            const fallback = setTimeout(() => {
+                if (swapped) return;
+                swapped = true;
+                vidElement.removeEventListener('canplay', onCanPlay);
+                doSwap();
+            }, 300);
+            vidElement.addEventListener('canplay', onCanPlay);
+        }
+    };
+
+    attemptPlay();
 }
 
 function advanceStep() {
     if (isAnimating || Date.now() < scrollCooldown) return;
     
     if (currentStep === 0) {
-        // STEP 0 -> Trigger Sequence 1 Frame Replacement
+        // STEP 0 -> Trigger Sequence 1
         isAnimating = true;
-        
-        // Minor fade for elegance
         gsap.to(text1, { opacity: 0, duration: 0.5 });
-        
-        safeRenderAndPlay(vid1, boundS1Start);
-        
+
+        seamlessTransitionTo(vid1, boundS1Start);
+
+        // Named handler so we can cleanly removeEventListener
         const checkTime = () => {
             if (vid1.currentTime >= 7.5) {
+                vid1.removeEventListener('timeupdate', checkTime);
                 vid1.pause();
-                setHardFocus(boundS1End, vid1);
-                gsap.to(text2, { opacity: 1, duration: 1 });
+                // Crossfade to boundary frame end
+                gsap.to(boundS1End, { autoAlpha: 1, duration: 0.12, ease: 'none' });
+                gsap.to(vid1, { autoAlpha: 0, duration: 0.08, delay: 0.04, ease: 'none' });
+                gsap.to(text2, { opacity: 1, duration: 1, delay: 0.1 });
                 currentStep = 1;
-                scrollCooldown = Date.now() + 800; // block mouse elasticity stacking
+                scrollCooldown = Date.now() + 800;
                 isAnimating = false;
-                vid1.removeEventListener("timeupdate", checkTime);
             }
         };
-        vid1.addEventListener("timeupdate", checkTime);
-    }  
+        vid1.addEventListener('timeupdate', checkTime);
+    }
     else if (currentStep === 1) {
-        // STEP 1 -> Trigger Sequence 2 Frame Replacement
+        // STEP 1 -> Trigger Sequence 2
         isAnimating = true;
-        
         gsap.to(text2, { opacity: 0, duration: 0.5 });
-        
-        // Unleash the Fluid Glass Cursor strictly for Sequence 2 tracking
-        gsap.to(glassCursor, { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.5)" });
-        
-        // Video 2 perfectly kicks off natively 
-        safeRenderAndPlay(vid2, boundS1End);
-        
-        vid2.onended = () => {
-            setHardFocus(boundS2End, vid2);
-            
+        gsap.to(glassCursor, { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' });
+
+        seamlessTransitionTo(vid2, boundS1End);
+
+        const onEnded2 = () => {
+            vid2.removeEventListener('ended', onEnded2);
+            // Crossfade to boundary frame end
+            gsap.to(boundS2End, { autoAlpha: 1, duration: 0.12, ease: 'none' });
+            gsap.to(vid2, { autoAlpha: 0, duration: 0.08, delay: 0.04, ease: 'none' });
             currentStep = 2;
             scrollCooldown = Date.now() + 800;
             isAnimating = false;
-            vid2.onended = null;
         };
+        vid2.addEventListener('ended', onEnded2);
     }
 }
 
@@ -285,41 +323,41 @@ function processStepBack() {
     
     if (currentStep === 1) {
         isAnimating = true;
-        
         gsap.to(text2, { opacity: 0, duration: 0.3 });
         vid1.pause();
-        
-        safeRenderAndPlay(vid1Rev, boundS1End);
-        
-        vid1Rev.onended = () => {
-            setHardFocus(boundS1Start, vid1Rev);
-            gsap.to(text1, { opacity: 1, duration: 0.5 });
+
+        seamlessTransitionTo(vid1Rev, boundS1End);
+
+        const onEndedRev1 = () => {
+            vid1Rev.removeEventListener('ended', onEndedRev1);
+            // Crossfade back to SEQ1-start boundary frame
+            gsap.to(boundS1Start, { autoAlpha: 1, duration: 0.12, ease: 'none' });
+            gsap.to(vid1Rev, { autoAlpha: 0, duration: 0.08, delay: 0.04, ease: 'none' });
+            gsap.to(text1, { opacity: 1, duration: 0.5, delay: 0.1 });
             currentStep = 0;
             scrollCooldown = Date.now() + 800;
             isAnimating = false;
-            vid1Rev.onended = null;
         };
-    } 
+        vid1Rev.addEventListener('ended', onEndedRev1);
+    }
     else if (currentStep === 2) {
         isAnimating = true;
-        
         vid2.pause();
-        
-        // Retract Fluid Glass Cursor immediately
-        gsap.to(glassCursor, { opacity: 0, scale: 0, duration: 0.5, ease: "power3.in" });
-        
-        safeRenderAndPlay(vid2Rev, [vid2, boundS2End]);
-        
-        vid2Rev.onended = () => {
-             setHardFocus(boundS1End, vid2Rev);
-             
-             // Video finished reversing, directly return to Step 1 text and engine state
-             gsap.to(text2, { opacity: 1, duration: 0.5 });
-             currentStep = 1;
-             scrollCooldown = Date.now() + 800;
-             isAnimating = false;
-             vid2Rev.onended = null;
+        gsap.to(glassCursor, { opacity: 0, scale: 0, duration: 0.5, ease: 'power3.in' });
+
+        seamlessTransitionTo(vid2Rev, [vid2, boundS2End]);
+
+        const onEndedRev2 = () => {
+            vid2Rev.removeEventListener('ended', onEndedRev2);
+            // Crossfade back to SEQ1-end/SEQ2-start boundary frame
+            gsap.to(boundS1End, { autoAlpha: 1, duration: 0.12, ease: 'none' });
+            gsap.to(vid2Rev, { autoAlpha: 0, duration: 0.08, delay: 0.04, ease: 'none' });
+            gsap.to(text2, { opacity: 1, duration: 0.5, delay: 0.1 });
+            currentStep = 1;
+            scrollCooldown = Date.now() + 800;
+            isAnimating = false;
         };
+        vid2Rev.addEventListener('ended', onEndedRev2);
     }
 }
 
